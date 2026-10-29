@@ -1,0 +1,13 @@
+# notes and helpers from the original template, not part of this site
+DESIGN.md
+BACKGROUND-PROMPTS.md
+tools/extract.py
+tools/mosaic.py
+tools/skp2gltf.py
+tools/serve.mjs
+*.skp
+*.skb
+.claude/
+__pycache__/
+node_modules/
+_site/

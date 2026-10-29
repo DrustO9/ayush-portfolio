@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://drusto9.github.io/ayush-portfolio/sitemap.xml
