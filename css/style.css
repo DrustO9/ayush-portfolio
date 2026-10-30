@@ -175,8 +175,7 @@ body:not(.mode-intro) #intro { opacity: 0; visibility: hidden; pointer-events: n
 /* the bars are mostly empty space over the button and the wall: only their links take clicks */
 .pl-links { pointer-events: auto; }
 .pl-top { top: max(22px, env(safe-area-inset-top)); display: flex; justify-content: space-between; gap: 12px; animation: rise 1s var(--ease) both 0.2s; }
-.pl-top .eyebrow { color: rgba(246, 236, 224, 0.55); }
-.pl-tag { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 15px; letter-spacing: 0.02em; text-transform: none; color: #f2a65a !important; }
+.pl-top .eyebrow { color: rgba(246, 236, 224, 0.72); font-size: clamp(13px, 1.3vw, 17px); letter-spacing: 0.26em; }
 
 .pl-name {
   position: absolute;
@@ -194,11 +193,11 @@ body:not(.mode-intro) #intro { opacity: 0; visibility: hidden; pointer-events: n
 }
 .pl-name .mask { display: block; overflow: hidden; padding-bottom: 0.06em; }
 /* the italic "y" of the first name hangs well below the line: room for it, and the line lifted a little */
-.pl-name .mask:first-child { position: relative; top: -0.12em; padding-bottom: 0.3em; margin-bottom: -0.3em; }
+.pl-name .mask:first-child { position: relative; top: -0.24em; padding-bottom: 0.3em; margin-bottom: -0.3em; }
 .pl-name .mask:nth-child(2) { text-align: right; }
 .pl-name .mask > span { display: inline-block; transform: translateY(110%); animation: mask-up 1.3s var(--ease) forwards 0.35s; }
 .pl-name .mask:nth-child(2) > span { animation-delay: 0.55s; }
-.pl-first { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(66px, 15.5vw, 260px); letter-spacing: -0.02em; }
+.pl-first { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(50px, 12vw, 210px); letter-spacing: -0.02em; white-space: nowrap; }
 .pl-last { font-family: var(--display); font-weight: 700; font-size: clamp(54px, 13vw, 220px); letter-spacing: 0.01em; }
 @keyframes mask-up { to { transform: none; } }
 @keyframes mask-out { from { transform: none; } to { transform: translateY(-110%); } }
@@ -722,7 +721,6 @@ body.touch #finale.show .finale-card { animation: card-in 1.3s var(--ease) backw
 @media (max-width: 560px) {
   .pl-name { top: 40%; }
   .pl-enter { top: calc(40% + 120px); padding: 15px 22px 15px 26px; font-size: 11px; letter-spacing: 0.24em; }
-  .pl-top .pl-tag { display: none; }
   .pl-bottom { grid-template-columns: 1fr auto; grid-template-areas: 'links count' 'status count'; row-gap: 6px; }
   .pl-links { grid-area: links; gap: 16px; flex-wrap: wrap; padding-bottom: 0; }
   .pl-status { grid-area: status; }

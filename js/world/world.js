@@ -25,7 +25,6 @@ const SUN_AZIMUTH = 48;          // degrees from -z towards +x
 const SHADOW_ELEVATION = 17;     // shadows use a higher sun so they stay readable
 
 const UP = new THREE.Vector3(0, 1, 0);
-const SCROLL_METRES = 0.05;      // metres travelled per pixel of wheel (a notch is ~5 m)
 const TOUCH_METRES = 0.12;       // per pixel of swipe
 const NEAR = 9;                  // within this many metres of a stop, its overview shows
 const BLEND = 30;                // the camera starts easing into a stop this far out
@@ -294,11 +293,9 @@ export async function createWorld(opts) {
   const onWheel = (e) => {
     if (mode !== 'drive' || !inputEnabled || uiTarget(e)) return;
     e.preventDefault();
-    // ctrl + wheel (and a trackpad pinch, which arrives as one) zooms instead of driving
-    if (e.ctrlKey) { setZoom(orbit.zoom * Math.exp(e.deltaY * (e.deltaMode ? 0.05 : 0.002))); return; }
-    const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1;
-    const d = (Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * unit;
-    push(Math.max(-20, Math.min(20, d * SCROLL_METRES)));
+    // the wheel zooms, towards whatever is under the pointer
+    if (e.deltaY < 0) orbit.aim = aimAt(e.clientX, e.clientY);
+    setZoom(orbit.zoom * Math.exp(Math.max(-0.4, Math.min(0.4, e.deltaY * (e.deltaMode ? 0.05 : 0.002)))));
   };
   let touchY = null;
   const onTouchStart = (e) => { if (mode === 'drive' && !uiTarget(e)) touchY = e.touches[0].clientY; };
@@ -314,8 +311,8 @@ export async function createWorld(opts) {
     if (mode !== 'drive' || !inputEnabled || e.target.closest?.('input, textarea')) return;
     if (e.key === '+' || e.key === '=') { setZoom(orbit.zoom / 1.15); return; }
     if (e.key === '-' || e.key === '_') { setZoom(orbit.zoom * 1.15); return; }
-    if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(e.key)) { sTarget = nextStop(1); lastInput = time; cruise = null; e.preventDefault(); }
-    else if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) { sTarget = nextStop(-1); lastInput = time; cruise = null; e.preventDefault(); }
+    if (['ArrowUp', 'ArrowRight', 'PageDown', ' '].includes(e.key)) { sTarget = nextStop(1); lastInput = time; cruise = null; e.preventDefault(); }
+    else if (['ArrowDown', 'ArrowLeft', 'PageUp'].includes(e.key)) { sTarget = nextStop(-1); lastInput = time; cruise = null; e.preventDefault(); }
     else return;
     if (!scrolled) { scrolled = true; onFirstScroll(); }
   };
@@ -335,6 +332,17 @@ export async function createWorld(opts) {
     const hit = raycaster.intersectObjects(exhibits.pickables, false)[0];
     return hit?.object.userData.stopId ?? null;
   };
+  // the point to zoom towards: an image under the pointer, else the ground (none for the sky)
+  const groundPlane = new THREE.Plane(UP, 0);
+  const aimAt = (x, y) => {
+    ndc.set((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1);
+    raycaster.setFromCamera(ndc, camera);
+    const hit = raycaster.intersectObjects(exhibits.pickables, false)[0];
+    if (hit) return hit.point.clone();
+    groundPlane.constant = -buggy.group.position.y;
+    const p = raycaster.ray.intersectPlane(groundPlane, new THREE.Vector3());
+    return p && p.distanceTo(camera.position) < 150 ? p : null;
+  };
   canvas.addEventListener('click', (e) => {
     if (mode !== 'drive' || !inputEnabled || orbit.dragged) return;
     const id = pickAt(e.clientX, e.clientY);
@@ -347,10 +355,11 @@ export async function createWorld(opts) {
     canvas.style.cursor = pickAt(e.clientX, e.clientY) ? 'pointer' : '';
   });
 
-  // ---------- Free look: drag sideways to swing the camera round what it is looking at, up and down
-  // to tilt the view (down to the sand, up into the sky), ctrl + wheel (or + / -) to zoom a little. The view stays put while parked and eases back once driving.
-  const orbit = { yaw: 0, pitch: 0, zoom: 1, drag: null, dragged: false, free: false, reset: false };
-  const ZOOM_MIN = 0.45, ZOOM_MAX = 1.6;
+  // ---------- Free look: drag sideways to turn the whole view round the car (it stays where it is on
+  // screen), up and down to tilt the view (down to the sand, up into the sky), the wheel (or + / -) to
+  // zoom towards a point. The view stays put while parked and eases back once driving.
+  const orbit = { yaw: 0, pitch: 0, zoom: 1, aim: null, drag: null, dragged: false, free: false, reset: false };
+  const ZOOM_MIN = 0.3, ZOOM_MAX = 1.6;
   const setZoom = (z) => { orbit.zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z)); };
   canvas.addEventListener('pointerdown', (e) => {
     if (mode !== 'drive' || !inputEnabled || e.pointerType === 'touch' || e.button !== 0) return;
@@ -377,9 +386,11 @@ export async function createWorld(opts) {
   window.addEventListener('pointerup', endDrag);
   window.addEventListener('pointercancel', endDrag);
 
-  // places the camera: the shot's pos / look, swung round `look` by yaw, pulled in or out by zoom,
-  // then the view tilted up or down by pitch from where the camera stands
+  // places the camera: the shot's pos / look turned together round the car by yaw, pulled in or out
+  // by zoom (drifting towards the aimed point as it zooms in), then the view tilted by pitch
   const ov = new THREE.Vector3(), orbitPos = new THREE.Vector3(), orbitLook = new THREE.Vector3();
+  const pivot = new THREE.Vector3(), turnedLook = new THREE.Vector3(), shift = new THREE.Vector3();
+  const v0 = new THREE.Vector3();
   function freeLook(pos, look, dt) {
     if (orbit.reset || mode !== 'drive' || swoop || (Math.abs(vel) > 2 && !orbit.drag)) {
       const k = Math.exp(-dt * 2.5);
@@ -393,12 +404,17 @@ export async function createWorld(opts) {
       camera.lookAt(look);
       return;
     }
-    ov.subVectors(pos, look).multiplyScalar(orbit.zoom);
-    ov.applyAxisAngle(UP, orbit.yaw);
-    orbitPos.addVectors(look, ov);
+    pivot.copy(buggy.group.position);
+    turnedLook.subVectors(look, pivot).applyAxisAngle(UP, orbit.yaw).add(pivot);
+    ov.subVectors(pos, pivot).applyAxisAngle(UP, orbit.yaw).add(pivot);   // the turned camera position
+    orbitPos.subVectors(ov, turnedLook).multiplyScalar(orbit.zoom).add(turnedLook);
+    if (orbit.zoom < 1 && orbit.aim) {
+      shift.subVectors(orbit.aim, turnedLook).multiplyScalar(0.8 * (1 - orbit.zoom) / (1 - ZOOM_MIN));
+      orbitPos.add(shift);
+    }
     orbitPos.y = Math.max(orbitPos.y, heightAt(orbitPos.x, orbitPos.z) + 1.2);
     // tilt: keep the heading, change the elevation of the line of sight
-    ov.subVectors(look, orbitPos);
+    ov.copy(turnedLook).add(orbit.zoom < 1 && orbit.aim ? shift : v0).sub(orbitPos);
     const r = ov.length(), flat = Math.hypot(ov.x, ov.z) || 1e-6;
     const e = Math.max(-1.25, Math.min(1.4, Math.asin(ov.y / r) + orbit.pitch));
     orbitLook.set(orbitPos.x + (ov.x / flat) * Math.cos(e) * r, orbitPos.y + Math.sin(e) * r, orbitPos.z + (ov.z / flat) * Math.cos(e) * r);

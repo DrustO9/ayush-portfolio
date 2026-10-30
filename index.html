@@ -33,7 +33,7 @@
 </head>
 <body class="mode-intro">
   <div id="sky-fallback" aria-hidden="true"></div>
-  <canvas id="world" aria-label="3D sunset cove. Scroll to travel along the shore; each project appears as you arrive."></canvas>
+  <canvas id="world" aria-label="3D sunset cove. Press the up arrow to drive along the shore; each project appears as you arrive."></canvas>
   <div id="fade" aria-hidden="true"></div>
 
   <!-- Intro + loading: a counter, a wall of hundreds of small pieces of the work, the name rising out of masks -->
@@ -42,11 +42,9 @@
     <div class="pl-grain" aria-hidden="true"></div>
     <header class="pl-top">
       <span class="eyebrow">AI Engineering Portfolio</span>
-      <span class="eyebrow pl-tag">Intelligence, Engineered</span>
-      <span class="eyebrow">2023 — 2028</span>
     </header>
     <h1 id="intro-title" class="pl-name" aria-label="Ayush Kumar Maurya">
-      <span class="mask"><span class="pl-first">Ayush</span></span>
+      <span class="mask"><span class="pl-first">Ayush Kumar</span></span>
       <span class="mask"><span class="pl-last">MAURYA</span></span>
     </h1>
     <button class="pl-enter" id="btn-explore" type="button" disabled>
@@ -79,15 +77,15 @@
 
   <!-- Journey rail: a slim scroll track on the right; the red dot is where you are -->
   <nav id="rail" aria-label="Journey along the shore">
-    <span class="rail-cue" aria-hidden="true">Scroll</span>
+    <span class="rail-cue" aria-hidden="true">Drive</span>
     <div class="rail-track"><span class="rail-fill"></span><span class="rail-ghost"></span><span class="rail-dot"></span></div>
   </nav>
 
   <!-- Starts the car: drives to the first stop (or scroll instead); gone once the journey is under way -->
-  <button id="btn-drive" class="drive-btn" type="button"><i class="live-dot" aria-hidden="true"></i><span>Start driving</span><small>or scroll</small></button>
+  <button id="btn-drive" class="drive-btn" type="button"><i class="live-dot" aria-hidden="true"></i><span>Start driving</span><small>or press ↑</small></button>
 
-  <!-- Free look: drag to swing the camera round, ctrl + scroll to zoom; Reset shows once the view is moved -->
-  <div id="look-hint" class="look-hint"><span><kbd>Scroll</kbd> drive · <kbd>Space</kbd> next stop · <kbd>Drag</kbd> look around · <kbd>Ctrl</kbd> + <kbd>Scroll</kbd> zoom · <kbd>?</kbd> all controls</span><button id="btn-reset-view" type="button">Reset view</button></div>
+  <!-- Free look: drag to turn the view round the car, scroll to zoom; Reset shows once the view is moved -->
+  <div id="look-hint" class="look-hint"><span><kbd>↑</kbd> drive · <kbd>↓</kbd> back · <kbd>Drag</kbd> look around · <kbd>Scroll</kbd> zoom · <kbd>?</kbd> all controls</span><button id="btn-reset-view" type="button">Reset view</button></div>
 
   <!-- How to explore: shown before entering the beach, and from the Controls button (or ?) -->
   <div id="guide" role="dialog" aria-modal="true" aria-labelledby="guide-title" hidden></div>
