@@ -450,6 +450,7 @@ function finaleHtml() {
   return `
     <div class="finale-card">
       <div class="finale-bg"></div>
+      <button class="panel-close" type="button" aria-label="Close">×</button>
       <div class="finale-edge" aria-hidden="true"></div>
       <div class="finale-glare" aria-hidden="true"></div>
       <div class="finale-content">
@@ -504,10 +505,23 @@ function hideFinale() {
   finale.classList.remove('show');
 }
 finale.addEventListener('click', (e) => {
+  if (e.target.closest('.panel-close')) return hideFinale();
   const act = e.target.closest('[data-finale]')?.dataset.finale;
   if (act === 'about') openPanel('about', 'pier');
   if (act === 'projects') location.hash = '#/projects';
 });
+
+// while the card is up, the first drive key or wheel turn just closes it; the next one moves on
+const closeFinaleFirst = (e) => {
+  if (!finale.classList.contains('show')) return;
+  if (e.type === 'keydown' && !['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', ' ', 'Escape'].includes(e.key)) return;
+  if (e.type === 'keydown' && e.target.closest?.('a, button') && e.key === ' ') return;
+  hideFinale();
+  e.preventDefault();
+  e.stopImmediatePropagation();
+};
+addEventListener('keydown', closeFinaleFirst, true);
+addEventListener('wheel', closeFinaleFirst, { capture: true, passive: false });
 
 function onNear(id) {
   state.near = id;

@@ -193,7 +193,7 @@ body:not(.mode-intro) #intro { opacity: 0; visibility: hidden; pointer-events: n
 }
 .pl-name .mask { display: block; overflow: hidden; padding-bottom: 0.06em; }
 /* the italic "y" of the first name hangs well below the line: room for it, and the line lifted a little */
-.pl-name .mask:first-child { font-size: clamp(50px, 12vw, 210px); position: relative; top: -0.12em; padding-bottom: 0.3em; margin-bottom: -0.3em; }
+.pl-name .mask:first-child { font-size: clamp(50px, 12vw, 210px); position: relative; top: -0.2em; padding-bottom: 0.32em; margin-bottom: -0.08em; }
 .pl-name .mask:nth-child(2) { text-align: right; }
 .pl-name .mask > span { display: inline-block; transform: translateY(110%); animation: mask-up 1.3s var(--ease) forwards 0.35s; }
 .pl-name .mask:nth-child(2) > span { animation-delay: 0.55s; }
@@ -626,9 +626,9 @@ body.hint-done .rail-ghost, body.hint-done .rail-cue { opacity: 0; animation: no
 .finale-card {
   position: relative;
   pointer-events: auto;
-  width: min(640px, 100%);
-  max-height: calc(100vh - 110px);
-  padding: 40px 44px 32px;
+  width: min(720px, 100%);
+  max-height: calc(100vh - 100px);
+  padding: 48px 52px 38px;
   border-radius: 28px;
   text-align: center;
   transform-style: preserve-3d;
@@ -637,6 +637,7 @@ body.hint-done .rail-ghost, body.hint-done .rail-cue { opacity: 0; animation: no
   animation: none;
 }
 #finale:not(.show) .finale-card { pointer-events: none; }
+.finale-card > .panel-close { position: absolute; top: 14px; right: 14px; z-index: 2; float: none; margin: 0; transform: translateZ(90px); }
 #finale.show .finale-card { animation: card-in 1.3s var(--ease) backwards; }
 body.touch #finale.show .finale-card { animation: card-in 1.3s var(--ease) backwards, float 6s ease-in-out 1.3s infinite; }
 @keyframes card-in { from { opacity: 0; transform: rotateX(62deg) translateY(80px) scale(0.92); } to { opacity: 1; transform: none; } }
@@ -673,9 +674,9 @@ body.touch #finale.show .finale-card { animation: card-in 1.3s var(--ease) backw
   background: radial-gradient(circle at var(--gx, 30%) var(--gy, 20%), rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 45%);
   mix-blend-mode: soft-light;
 }
-.finale-content { position: relative; transform-style: preserve-3d; max-height: calc(100vh - 180px); overflow-y: auto; scrollbar-width: none; }
+.finale-content { position: relative; padding: 10px 8px 4px; transform-style: preserve-3d; max-height: calc(100vh - 180px); overflow-y: auto; scrollbar-width: none; }
 .finale-content > * { transform: translateZ(var(--z, 30px)); }
-.finale-portrait { --z: 80px; display: block; width: 108px; height: 108px; margin: 0 auto 18px; border-radius: 50%; object-fit: cover; object-position: 50% 30%; box-shadow: 0 0 0 3px #fff8ef, 0 0 0 6px rgba(255, 59, 47, 0.6), 0 18px 40px -10px rgba(40, 10, 5, 0.6), 0 0 40px rgba(255, 140, 70, 0.7); }
+.finale-portrait { --z: 80px; display: block; width: 116px; height: 116px; margin: 0 auto 18px; border-radius: 50%; object-fit: cover; object-position: 50% 30%; box-shadow: 0 0 0 3px #fff8ef, 0 0 0 6px rgba(255, 59, 47, 0.6), 0 18px 40px -10px rgba(40, 10, 5, 0.6), 0 0 40px rgba(255, 140, 70, 0.7); }
 .finale-card h2 { --z: 60px; font-family: var(--card-serif); font-weight: 400; font-size: clamp(46px, 6.4vw, 76px); line-height: 0.95; margin: 10px 0 8px; letter-spacing: -0.01em; }
 .finale-card .meta { --z: 40px; margin-bottom: 18px; }
 .finale-card .about { --z: 30px; font-size: 15.5px; line-height: 1.7; color: var(--ink-2); margin: 0 auto 22px; max-width: 520px; }
