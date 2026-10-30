@@ -305,6 +305,7 @@ function aboutPanel() {
     </ul>
     <h3 class="eyebrow panel-section-title">Contact</h3>
     <div class="contact-links">${contactLinks('list')}</div>
+    <button class="btn btn-primary" type="button" data-go="card" style="margin-top:14px">Open contact card</button>
     <p class="signoff">${esc(person.signoff)}</p>
     <div class="panel-nav">
       <button type="button" data-goto="${projects[projects.length - 1].id}">← Previous<small>${esc(projects[projects.length - 1].title)}</small></button>
@@ -355,6 +356,7 @@ panel.addEventListener('click', (e) => {
     return travelTo(to);
   }
   if (e.target.closest('[data-go="portfolio"]')) location.hash = '#/projects';
+  if (e.target.closest('[data-go="card"]')) { closePanel(); showFinale(true); }
 });
 
 /* ------------------------------------------------------------------ */
@@ -493,12 +495,12 @@ finale.addEventListener('pointerleave', () => {
 
 // The opening volley of fireworks goes up over the sea first; then the card.
 let finaleTimer = 0;
-function showFinale() {
+function showFinale(now = false) {
   clearTimeout(finaleTimer);
   if (state.panel) return;
   if (!finale.innerHTML) finale.innerHTML = finaleHtml();
   finale.hidden = false;
-  finaleTimer = setTimeout(() => finale.classList.add('show'), reducedMotion ? 0 : 2900);
+  finaleTimer = setTimeout(() => finale.classList.add('show'), reducedMotion || now ? 0 : 2900);
 }
 function hideFinale() {
   clearTimeout(finaleTimer);
@@ -511,9 +513,10 @@ finale.addEventListener('click', (e) => {
   if (act === 'projects') location.hash = '#/projects';
 });
 
-// while the card is up, the first drive key or wheel turn just closes it; the next one moves on
+// while the card is up the wheel does nothing (no zoom), and the first drive key just closes it
 const closeFinaleFirst = (e) => {
   if (!finale.classList.contains('show')) return;
+  if (e.type === 'wheel') { if (!e.target.closest?.('.finale-content')) e.preventDefault(); e.stopImmediatePropagation(); return; }
   if (e.type === 'keydown' && !['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', ' ', 'Escape'].includes(e.key)) return;
   if (e.type === 'keydown' && e.target.closest?.('a, button') && e.key === ' ') return;
   hideFinale();
@@ -827,7 +830,7 @@ function guideHtml(entering) {
     <p class="guide-sub">A car drives along the shore and stops at each building: education, internships, projects, competitions, then contact at the pier.</p>
     <ul class="guide-list">${GUIDE.map(([keys, what, note]) => `<li><span class="keys">${keys.map((k) => k === '+' ? '<b>+</b>' : `<kbd>${esc(k)}</kbd>`).join('')}</span><span class="what"><strong>${esc(what)}</strong><small>${esc(note)}</small></span></li>`).join('')}</ul>
     <p class="guide-menu"><strong>Top menu</strong> Controls · Projects (every stop) · About · Sound · Portfolio view</p>
-    <div class="guide-actions"><button class="btn guide-go" type="button" data-guide="go">${entering ? 'Enter the beach' : 'Back to the drive'}</button>${!isTouch ? '<span class="guide-tip">Press <kbd>?</kbd> any time to see this again</span>' : ''}</div>
+    <div class="guide-actions"><button class="btn guide-go" type="button" data-guide="go">${entering ? 'Enter the beach' : 'Back to the drive'}</button>${!isTouch ? '<span class="guide-tip">Press <kbd>?</kbd> or <kbd>/</kbd> any time to see this again</span>' : ''}</div>
   </div>`;
 }
 let guideEntering = false;
@@ -851,7 +854,7 @@ guide.addEventListener('click', (e) => {
 window.addEventListener('keydown', (e) => {
   if (!guide.hidden && e.key === 'Escape') { e.stopImmediatePropagation(); if (!guideEntering) closeGuide(); return; }
   if (!guide.hidden && e.key === 'Enter' && guideEntering && !e.target.closest?.('a, button')) { e.preventDefault(); e.stopImmediatePropagation(); beginJourney(); return; }
-  if (e.key === '?' && state.mode === 'world' && guide.hidden) openGuide(false);
+  if ((e.key === '?' || e.key === '/') && state.mode === 'world' && guide.hidden) { e.preventDefault(); openGuide(false); }
 }, true);
 exploreBtn.addEventListener('click', beginJourney);
 // once the beach has loaded, a click anywhere on the intro (or Enter) begins too
